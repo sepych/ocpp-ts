@@ -9,5 +9,9 @@
     "moduleResolution": "node",
     "strict": true,
     "noImplicitAny": true
-  }
+  },
+  "include": [
+    "./src/**/*",
+    "./examples/**/*"
+  ]
 }

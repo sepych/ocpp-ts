@@ -24,8 +24,7 @@ export class Server {
       port,
       host,
       handleProtocols: (protocols: Set<string>, req: IncomingMessage) => {
-        // @ts-ignore
-        if (protocols.indexOf(OCPP_PROTOCOL_1_6) !== -1) {
+        if (protocols.has(OCPP_PROTOCOL_1_6)) {
           return OCPP_PROTOCOL_1_6;
         }
         return false;

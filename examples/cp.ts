@@ -2,9 +2,9 @@ import { Client } from '../src/Client';
 import { BootNotificationRequest } from '../src/ocpp-1.6-types/BootNotification';
 import { BootNotificationResponse } from '../src/ocpp-1.6-types/BootNotificationResponse';
 import schemas from '../src/schemas';
-import { RemoteStartTransactionRequest } from '../src/ocpp-1.6-types/RemoteStartTransaction';
-import { RemoteStartTransactionResponse } from '../src/ocpp-1.6-types/RemoteStartTransactionResponse';
 import { OcppError } from '../src/OcppError';
+import { StartTransactionRequest } from '../src/ocpp-1.6-types/StartTransaction';
+import { StartTransactionResponse } from '../src/ocpp-1.6-types/StartTransactionResponse';
 
 const client = new Client();
 
@@ -15,24 +15,25 @@ async function init() {
     chargePointModel: 'NECU-T2',
   };
 
-  client.callRequest(schemas.BootNotification.title, boot)
-    .then((response: BootNotificationResponse) => {
-      if (response.status === 'Accepted') {
-        client.on(schemas.RemoteStartTransaction.title, (
-          request: RemoteStartTransactionRequest,
-          cb: (response: RemoteStartTransactionResponse) => void,
-        ) => {
-          const startTransactionResponse: RemoteStartTransactionResponse = {
-            status: 'Accepted',
-          };
-          cb(startTransactionResponse);
-        });
+  try {
+    const bootResp: BootNotificationResponse = await client.callRequest(schemas.BootNotification.title, boot);
+    if (bootResp.status === 'Accepted') {
+      const transaction: StartTransactionRequest = {
+        connectorId: 0,
+        idTag: '1234',
+        meterStart: 0,
+        timestamp: new Date().toISOString(),
+      };
+      const transactionResp: StartTransactionResponse = await client.callRequest(schemas.StartTransaction.title, transaction);
+      if (transactionResp.idTagInfo.status === 'Accepted') {
+        console.log('Starting transaction...');
       }
-    }).catch((e) => {
-      if (e instanceof Error || e instanceof OcppError) {
-        console.error(e.message);
-      }
-    });
+    }
+  } catch (e) {
+    if (e instanceof Error || e instanceof OcppError) {
+      console.error(e.message);
+    }
+  }
 }
 
 init();

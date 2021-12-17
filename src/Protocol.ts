@@ -1,8 +1,14 @@
 import WebSocket from 'ws';
+import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import schemas from './schemas';
-import { ERROR_INTERNALERROR, ERROR_NOTIMPLEMENTED, OcppError } from './OcppError';
+import {
+  ERROR_FORMATIONVIOLATION,
+  ERROR_INTERNALERROR,
+  ERROR_NOTIMPLEMENTED,
+  OcppError,
+} from './OcppError';
 
 const CALL_MESSAGE = 2; // Client-to-Server
 const CALLRESULT_MESSAGE = 3; // Server-to-Client
@@ -28,7 +34,6 @@ export class Protocol {
 
   onMessage(message: string) {
     try {
-      console.debug(message);
       const [messageType, ...rest] = JSON.parse(message);
       if (!Array.isArray(rest)) {
         throw new Error('ProtocolError');
@@ -62,7 +67,6 @@ export class Protocol {
           messageId,
           formattedAction,
           payload]);
-        console.debug(result);
         this.socket.send(result);
         this.pendingCalls[messageId] = {
           resolve,
@@ -99,29 +103,50 @@ export class Protocol {
     errorDescription: string,
     errorDetails: any,
   ) {
-    const { reject } = this.pendingCalls[messageId];
-    if (reject) {
-      reject(new OcppError(errorCode, errorDescription, errorDetails));
+    if (this.pendingCalls[messageId]) {
+      const { reject } = this.pendingCalls[messageId];
+      if (reject) {
+        reject(new OcppError(errorCode, errorDescription, errorDetails));
+      }
+      delete this.pendingCalls[messageId];
     }
-    delete this.pendingCalls[messageId];
   }
 
   private onCallResult(messageId: string, payload: any) {
-    const { resolve } = this.pendingCalls[messageId];
-    if (resolve) {
-      resolve(payload);
+    if (this.pendingCalls[messageId]) {
+      const { resolve } = this.pendingCalls[messageId];
+      if (resolve) {
+        resolve(payload);
+      }
+      delete this.pendingCalls[messageId];
     }
-    delete this.pendingCalls[messageId];
   }
 
   private async onCall(messageId: string, action: string, payload: any) {
     // @ts-ignore
     const schema = schemas[action];
-    console.log(schema, action, payload);
     if (!schema) {
-      throw new Error('NotImplemented');
+      this.callError(messageId, new OcppError(ERROR_NOTIMPLEMENTED, `Action ${action} not found`));
+      return;
     }
-    // TODO validate payload
+
+    // validating payload
+    const ajv = new Ajv();
+    delete schema.$schema;
+    const validate = ajv.compile(schema);
+    const valid = validate(payload);
+    if (!valid) {
+      // TODO add more accurate errors
+      this.callError(
+        messageId,
+        new OcppError(
+          ERROR_FORMATIONVIOLATION,
+          'Payload for Action is syntactically incorrect or not conform the PDU structure for Action',
+          validate.errors,
+        ),
+      );
+      return;
+    }
 
     const promise = new Promise((resolve, reject) => {
       setTimeout(() => {

@@ -7,6 +7,7 @@ module.exports = {
     project: './tsconfig.json'
   },
   rules: {
-    'class-methods-use-this': 0,
+    "import/prefer-default-export": 0,
+    "@typescript-eslint/indent": 0,
   }
 };

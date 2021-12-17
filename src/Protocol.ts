@@ -56,7 +56,7 @@ export class Protocol {
   public callRequest(action: string, payload: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const formattedAction = this.formatSchemaAction(action);
+        const formattedAction = Protocol.formatSchemaAction(action);
         const messageId = uuidv4();
         const result = JSON.stringify([CALL_MESSAGE,
           messageId,
@@ -64,7 +64,10 @@ export class Protocol {
           payload]);
         console.debug(result);
         this.socket.send(result);
-        this.pendingCalls[messageId] = { resolve, reject };
+        this.pendingCalls[messageId] = {
+          resolve,
+          reject,
+        };
 
         setTimeout(() => {
           // timeout error
@@ -75,16 +78,6 @@ export class Protocol {
         reject(e);
       }
     });
-  }
-
-  private formatSchemaAction(action: string) {
-    // for some reason schema titles contains "Request" postfix
-    return action.replace('Request', '');
-  }
-
-  private deFormatSchemaAction(action: string) {
-    // for some reason schema titles contains "Request" postfix
-    return `${action}Request`;
   }
 
   private callError(messageId: string, error: OcppError) {
@@ -100,7 +93,12 @@ export class Protocol {
     }
   }
 
-  private onCallError(messageId: string, errorCode: string, errorDescription: string, errorDetails: any) {
+  private onCallError(
+    messageId: string,
+    errorCode: string,
+    errorDescription: string,
+    errorDetails: any,
+  ) {
     const { reject } = this.pendingCalls[messageId];
     if (reject) {
       reject(new OcppError(errorCode, errorDescription, errorDetails));
@@ -131,7 +129,7 @@ export class Protocol {
         reject(new OcppError(ERROR_INTERNALERROR, 'No response from the handler'));
       }, 10000);
 
-      const deformattedAction = this.deFormatSchemaAction(action);
+      const deformattedAction = Protocol.deFormatSchemaAction(action);
       const hasListener = this.eventEmitter.emit(deformattedAction, payload, (response: any) => {
         resolve(response);
       });
@@ -141,7 +139,8 @@ export class Protocol {
     });
     promise.then((response) => {
       this.callResult(messageId, action, response);
-    }).catch((err: OcppError) => {
+    })
+    .catch((err: OcppError) => {
       this.callError(messageId, err);
     });
   }
@@ -159,5 +158,15 @@ export class Protocol {
         console.error(e.message);
       }
     }
+  }
+
+  static formatSchemaAction(action: string) {
+    // for some reason schema titles contains "Request" postfix
+    return action.replace('Request', '');
+  }
+
+  static deFormatSchemaAction(action: string) {
+    // for some reason schema titles contains "Request" postfix
+    return `${action}Request`;
   }
 }

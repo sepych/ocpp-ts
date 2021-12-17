@@ -56,19 +56,20 @@ export class Server extends EventEmitter {
   }
 
   onNewConnection(socket: WebSocket, req: IncomingMessage) {
+    if (!socket.protocol) {
+      // From Spec: If the Central System does not agree to using one of the subprotocols offered
+      // by the client, it MUST complete the WebSocket handshake with a response without a
+      // Sec-WebSocket-Protocol header and then immediately close the WebSocket connection.
+      console.info('Closed connection due to unsupported protocol');
+      socket.close();
+      return;
+    }
+
     socket.on('error', (err) => {
       console.info(err, socket.readyState);
     });
 
-    if (!socket.protocol) {
-      // From Spec: If the Central System does not agree to using one of the subprotocols offered by the client,
-      // it MUST complete the WebSocket handshake with a response without a Sec-WebSocket-Protocol header and then
-      // immediately close the WebSocket connection.
-      console.info('Close connection due to unsupported protocol');
-      return socket.close();
-    }
-
-    const cpId = this.getCpIdFromUrl(req.url);
+    const cpId = Server.getCpIdFromUrl(req.url);
     const connection = new Protocol(this, socket, cpId);
 
     socket.on('close', (ws: WebSocket, code: number, reason: Buffer) => {
@@ -79,9 +80,10 @@ export class Server extends EventEmitter {
     this.clients.push(connection);
   }
 
-  private getCpIdFromUrl(url: string | undefined): string | undefined {
+  static getCpIdFromUrl(url: string | undefined): string | undefined {
     if (url) {
-      const parts = url.split('/').filter((item) => item);
+      const parts = url.split('/')
+        .filter((item) => item);
       return parts[parts.length - 1];
     }
     return undefined;

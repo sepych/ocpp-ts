@@ -15,9 +15,11 @@ import ClearChargingProfileResponse from './ocpp-1.6-schemas/ClearChargingProfil
 import DataTransfer from './ocpp-1.6-schemas/DataTransfer.json';
 import DataTransferResponse from './ocpp-1.6-schemas/DataTransferResponse.json';
 import DiagnosticsStatusNotification from './ocpp-1.6-schemas/DiagnosticsStatusNotification.json';
-import DiagnosticsStatusNotificationResponse from './ocpp-1.6-schemas/DiagnosticsStatusNotificationResponse.json';
+import DiagnosticsStatusNotificationResponse
+  from './ocpp-1.6-schemas/DiagnosticsStatusNotificationResponse.json';
 import FirmwareStatusNotification from './ocpp-1.6-schemas/FirmwareStatusNotification.json';
-import FirmwareStatusNotificationResponse from './ocpp-1.6-schemas/FirmwareStatusNotificationResponse.json';
+import FirmwareStatusNotificationResponse
+  from './ocpp-1.6-schemas/FirmwareStatusNotificationResponse.json';
 import GetCompositeSchedule from './ocpp-1.6-schemas/GetCompositeSchedule.json';
 import GetCompositeScheduleResponse from './ocpp-1.6-schemas/GetCompositeScheduleResponse.json';
 import GetConfiguration from './ocpp-1.6-schemas/GetConfiguration.json';
@@ -111,5 +113,5 @@ export default {
   UnlockConnector,
   UnlockConnectorResponse,
   UpdateFirmware,
-  UpdateFirmwareResponse
+  UpdateFirmwareResponse,
 };

@@ -1,0 +1,21 @@
+{
+  "name": "ocpp-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^6.12.6"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.2.2",
+    "typescript": "^4.5.4",
+    "json-schema-to-typescript": "^10.1.5"
+  }
+}

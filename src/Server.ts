@@ -1,24 +1,26 @@
+import EventEmitter from 'events';
 import WebSocket, {ServerOptions} from 'ws';
 import {IncomingMessage} from 'http';
-import { ConnectionClient } from './ConnectionClient';
+import {Protocol} from "./Protocol";
 
 const OCPP_PROTOCOL_1_6 = "ocpp1.6";
 
 export type CSOptions = {
   wsOptions?: ServerOptions,
-  validateConnection?: (url: string|undefined) => boolean
+  validateConnection?: (url: string | undefined) => boolean
 };
 
-export class Server {
+export class Server extends EventEmitter {
   options: CSOptions;
   server: WebSocket.Server | null = null;
-  clients: Array<ConnectionClient> = [];
+  clients: Array<Protocol> = [];
 
-  constructor (options: CSOptions) {
+  constructor(options: CSOptions) {
+    super();
     this.options = options;
   }
 
-  listen (port = 9220, host?: string) {
+  listen(port = 9220, host?: string) {
     const validateConnection = this.options.validateConnection || (() => true);
     const wsOptions = {
       port,
@@ -50,8 +52,7 @@ export class Server {
     this.server.on('connection', (ws, req) => this.onNewConnection(ws, req));
   }
 
-  onNewConnection (socket: WebSocket, req: IncomingMessage) {
-    console.info('New ws connection');
+  onNewConnection(socket: WebSocket, req: IncomingMessage) {
     socket.on('error', (err) => {
       console.info(err, socket.readyState);
     });
@@ -64,7 +65,8 @@ export class Server {
       return socket.close();
     }
 
-    const connection = new ConnectionClient(socket);
+    const cpId = this.getCpIdFromUrl(req.url);
+    const connection = new Protocol(this, socket, cpId);
 
     socket.on('close', (ws: WebSocket, code: number, reason: Buffer) => {
       console.info(reason);
@@ -72,5 +74,13 @@ export class Server {
       this.clients.splice(index, 1);
     });
     this.clients.push(connection);
+  }
+
+  private getCpIdFromUrl(url: string | undefined): string | undefined {
+    if (url) {
+      const parts = url.split('/').filter(item => item);
+      return parts[parts.length - 1];
+    }
+    return undefined;
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "ocpp-ts",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,9 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^6.12.6",
+    "uuid": "^8.3.2",
     "ws": "^8.3.0"
   },
   "devDependencies": {
+    "@types/uuid": "^8.3.3",
     "@types/ws": "^8.2.2",
     "json-schema-to-typescript": "^10.1.5",
     "typescript": "^4.5.4"

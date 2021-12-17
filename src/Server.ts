@@ -1,9 +1,9 @@
 import EventEmitter from 'events';
-import WebSocket, {ServerOptions} from 'ws';
-import {IncomingMessage} from 'http';
-import {Protocol} from "./Protocol";
+import WebSocket, { ServerOptions } from 'ws';
+import { IncomingMessage } from 'http';
+import { Protocol } from './Protocol';
 
-const OCPP_PROTOCOL_1_6 = "ocpp1.6";
+const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
 
 export type CSOptions = {
   wsOptions?: ServerOptions,
@@ -12,7 +12,9 @@ export type CSOptions = {
 
 export class Server extends EventEmitter {
   options: CSOptions;
+
   server: WebSocket.Server | null = null;
+
   clients: Array<Protocol> = [];
 
   constructor(options: CSOptions) {
@@ -25,7 +27,7 @@ export class Server extends EventEmitter {
     const wsOptions = {
       port,
       host,
-      handleProtocols: (protocols: Set<string>, req: IncomingMessage) => {
+      handleProtocols: (protocols: Set<string>) => {
         if (protocols.has(OCPP_PROTOCOL_1_6)) {
           return OCPP_PROTOCOL_1_6;
         }
@@ -33,14 +35,15 @@ export class Server extends EventEmitter {
       },
       verifyClient: async (
         info: { origin: string; secure: boolean; req: IncomingMessage },
-        callback: (res: boolean, code?: number, message?: string) => void) => {
+        callback: (res: boolean, code?: number, message?: string) => void,
+      ) => {
         const isAccept = await validateConnection(info.req.url);
 
         console.debug(`Request for connect "${info.req.url}" (${info.req.headers['sec-websocket-protocol']}) - ${isAccept ? 'Valid identifier' : 'Invalid identifier'}`);
 
         callback(isAccept, 404, 'Central System does not recognize the charge point identifier in the URL path');
       },
-      ...(this.options.wsOptions || {})
+      ...(this.options.wsOptions || {}),
     };
 
     this.server = new WebSocket.Server(wsOptions);
@@ -61,7 +64,7 @@ export class Server extends EventEmitter {
       // From Spec: If the Central System does not agree to using one of the subprotocols offered by the client,
       // it MUST complete the WebSocket handshake with a response without a Sec-WebSocket-Protocol header and then
       // immediately close the WebSocket connection.
-      console.info(`Close connection due to unsupported protocol`);
+      console.info('Close connection due to unsupported protocol');
       return socket.close();
     }
 
@@ -78,7 +81,7 @@ export class Server extends EventEmitter {
 
   private getCpIdFromUrl(url: string | undefined): string | undefined {
     if (url) {
-      const parts = url.split('/').filter(item => item);
+      const parts = url.split('/').filter((item) => item);
       return parts[parts.length - 1];
     }
     return undefined;

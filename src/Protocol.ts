@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
-import {v4 as uuidv4} from 'uuid';
-import schemas from "./schemas";
-import {ERROR_INTERNALERROR, ERROR_NOTIMPLEMENTED, OcppError} from "./OcppError";
-import EventEmitter from "events";
+import { v4 as uuidv4 } from 'uuid';
+import EventEmitter from 'events';
+import schemas from './schemas';
+import { ERROR_INTERNALERROR, ERROR_NOTIMPLEMENTED, OcppError } from './OcppError';
 
 const CALL_MESSAGE = 2; // Client-to-Server
 const CALLRESULT_MESSAGE = 3; // Server-to-Client
@@ -10,8 +10,11 @@ const CALLERROR_MESSAGE = 4; // Server-to-Client
 
 export class Protocol {
   pendingCalls: any = {};
+
   eventEmitter: EventEmitter;
+
   socket: WebSocket;
+
   cpId: string | undefined;
 
   constructor(eventEmitter: EventEmitter, socket: WebSocket, cpId?: string) {
@@ -56,12 +59,12 @@ export class Protocol {
         const formattedAction = this.formatSchemaAction(action);
         const messageId = uuidv4();
         const result = JSON.stringify([CALL_MESSAGE,
-                                        messageId,
-                                        formattedAction,
-                                        payload]);
+          messageId,
+          formattedAction,
+          payload]);
         console.debug(result);
         this.socket.send(result);
-        this.pendingCalls[messageId] = {resolve, reject};
+        this.pendingCalls[messageId] = { resolve, reject };
 
         setTimeout(() => {
           // timeout error
@@ -76,29 +79,29 @@ export class Protocol {
 
   private formatSchemaAction(action: string) {
     // for some reason schema titles contains "Request" postfix
-    return action.replace("Request", "");
+    return action.replace('Request', '');
   }
 
   private deFormatSchemaAction(action: string) {
     // for some reason schema titles contains "Request" postfix
-    return action + "Request";
+    return `${action}Request`;
   }
 
   private callError(messageId: string, error: OcppError) {
     try {
       const result = JSON.stringify([CALLERROR_MESSAGE,
-                                      messageId,
-                                      error.code,
-                                      error.message,
-                                      error.details || {}]);
-
+        messageId,
+        error.code,
+        error.message,
+        error.details || {}]);
+      this.socket.send(result);
     } catch (e) {
       console.error(e);
     }
   }
 
   private onCallError(messageId: string, errorCode: string, errorDescription: string, errorDetails: any) {
-    const {reject} = this.pendingCalls[messageId];
+    const { reject } = this.pendingCalls[messageId];
     if (reject) {
       reject(new OcppError(errorCode, errorDescription, errorDetails));
     }
@@ -106,7 +109,7 @@ export class Protocol {
   }
 
   private onCallResult(messageId: string, payload: any) {
-    const {resolve} = this.pendingCalls[messageId];
+    const { resolve } = this.pendingCalls[messageId];
     if (resolve) {
       resolve(payload);
     }
@@ -122,7 +125,7 @@ export class Protocol {
     }
     // TODO validate payload
 
-    const promise = new Promise(async (resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       setTimeout(() => {
         // timeout error
         reject(new OcppError(ERROR_INTERNALERROR, 'No response from the handler'));
@@ -133,22 +136,22 @@ export class Protocol {
         resolve(response);
       });
       if (!hasListener) {
-        reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${deformattedAction}" not set`))
+        reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${deformattedAction}" not set`));
       }
     });
     promise.then((response) => {
       this.callResult(messageId, action, response);
     }).catch((err: OcppError) => {
       this.callError(messageId, err);
-    })
+    });
   }
 
   private callResult(messageId: string, action: string, responsePayload: any) {
     try {
       const result = JSON.stringify([
-                                      CALLRESULT_MESSAGE,
-                                      messageId,
-                                      responsePayload]);
+        CALLRESULT_MESSAGE,
+        messageId,
+        responsePayload]);
       this.socket.send(result);
     } catch (e) {
       if (e instanceof SyntaxError) {

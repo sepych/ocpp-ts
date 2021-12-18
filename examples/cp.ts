@@ -1,8 +1,6 @@
-import { Client } from '../src/Client';
+import { Client, ocpp, OcppError } from '../src';
 import { BootNotificationRequest } from '../src/ocpp-1.6-types/BootNotification';
 import { BootNotificationResponse } from '../src/ocpp-1.6-types/BootNotificationResponse';
-import schemas from '../src/schemas';
-import { OcppError } from '../src/OcppError';
 import { StartTransactionRequest } from '../src/ocpp-1.6-types/StartTransaction';
 import { StartTransactionResponse } from '../src/ocpp-1.6-types/StartTransactionResponse';
 
@@ -16,7 +14,7 @@ async function init() {
   };
 
   try {
-    const bootResp: BootNotificationResponse = await client.callRequest(schemas.BootNotification.title, boot);
+    const bootResp: BootNotificationResponse = await client.callRequest(ocpp.BootNotification.title, boot);
     if (bootResp.status === 'Accepted') {
       const transaction: StartTransactionRequest = {
         connectorId: 0,
@@ -24,7 +22,7 @@ async function init() {
         meterStart: 0,
         timestamp: new Date().toISOString(),
       };
-      const transactionResp: StartTransactionResponse = await client.callRequest(schemas.StartTransaction.title, transaction);
+      const transactionResp: StartTransactionResponse = await client.callRequest(ocpp.StartTransaction.title, transaction);
       if (transactionResp.idTagInfo.status === 'Accepted') {
         console.log('Starting transaction...');
       }

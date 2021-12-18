@@ -21,12 +21,9 @@ export class Protocol {
 
   socket: WebSocket;
 
-  cpId: string | undefined;
-
-  constructor(eventEmitter: EventEmitter, socket: WebSocket, cpId?: string) {
+  constructor(eventEmitter: EventEmitter, socket: WebSocket) {
     this.eventEmitter = eventEmitter;
     this.socket = socket;
-    this.cpId = cpId;
     this.socket.on('message', (message) => {
       this.onMessage(message.toString());
     });
@@ -187,7 +184,8 @@ export class Protocol {
 
   static formatSchemaAction(action: string) {
     // for some reason schema titles contains "Request" postfix
-    return action.replace('Request', '');
+    const search = 'Request';
+    return action.replace(new RegExp(`${search}([^${search}]*)$`), '$1');
   }
 
   static deFormatSchemaAction(action: string) {

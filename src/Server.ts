@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import WebSocket, { ServerOptions } from 'ws';
 import { IncomingMessage } from 'http';
 import { Protocol } from './Protocol';
+import { ClientBase } from './ClientBase';
 
 const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
 
@@ -15,7 +16,7 @@ export class Server extends EventEmitter {
 
   server: WebSocket.Server | null = null;
 
-  clients: Array<Protocol> = [];
+  clients: Array<ClientBase> = [];
 
   constructor(options: CSOptions) {
     super();
@@ -48,7 +49,7 @@ export class Server extends EventEmitter {
 
     this.server = new WebSocket.Server(wsOptions);
 
-    this.server.on('error', (server: WebSocket.Server, err: Error) => {
+    this.server.on('error', (err: Error) => {
       console.info(err);
     });
 
@@ -56,7 +57,8 @@ export class Server extends EventEmitter {
   }
 
   onNewConnection(socket: WebSocket, req: IncomingMessage) {
-    if (!socket.protocol) {
+    const cpId = Server.getCpIdFromUrl(req.url);
+    if (!socket.protocol || !cpId) {
       // From Spec: If the Central System does not agree to using one of the subprotocols offered
       // by the client, it MUST complete the WebSocket handshake with a response without a
       // Sec-WebSocket-Protocol header and then immediately close the WebSocket connection.
@@ -69,21 +71,22 @@ export class Server extends EventEmitter {
       console.info(err, socket.readyState);
     });
 
-    const cpId = Server.getCpIdFromUrl(req.url);
-    const connection = new Protocol(this, socket, cpId);
-
-    socket.on('close', (ws: WebSocket, code: number, reason: Buffer) => {
-      console.info(reason);
-      const index = this.clients.indexOf(connection);
+    const client = new ClientBase(cpId);
+    client.setConnection(new Protocol(client, socket));
+    socket.on('close', (code: number, reason: Buffer) => {
+      const index = this.clients.indexOf(client);
       this.clients.splice(index, 1);
+      client.emit('close', code, reason);
+      this.emit('close', client, code, reason);
     });
-    this.clients.push(connection);
+    this.clients.push(client);
+    this.emit('connection', client);
   }
 
   static getCpIdFromUrl(url: string | undefined): string | undefined {
     if (url) {
       const parts = url.split('/')
-        .filter((item) => item);
+      .filter((item) => item);
       return parts[parts.length - 1];
     }
     return undefined;

@@ -6,10 +6,10 @@ import { OcppError } from '../src/OcppError';
 import { StartTransactionRequest } from '../src/ocpp-1.6-types/StartTransaction';
 import { StartTransactionResponse } from '../src/ocpp-1.6-types/StartTransactionResponse';
 
-const client = new Client();
+const client = new Client('CP1111');
 
 async function init() {
-  await client.connect('ws://localhost:9220/webServices/ocpp/CP1111');
+  await client.connect('ws://localhost:9220/webServices/ocpp/');
   const boot: BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',

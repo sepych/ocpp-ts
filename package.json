@@ -1,10 +1,11 @@
 {
   "name": "ocpp-ts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OCPP 1.6: Open Charge Point Protocol",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
+    "compileSchema": "node scripts/compileSchemas.js",
     "prepublish": "npm run build",
     "build": "rm -rf ./dist/ && tsc",
     "test": "jest"
@@ -37,6 +38,7 @@
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
     "babel-jest": "^27.4.5",
+    "directory-tree": "^3.0.1",
     "eslint": "^8.4.1",
     "eslint-config-airbnb": "^19.0.2",
     "eslint-config-airbnb-typescript": "^16.1.0",

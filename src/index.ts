@@ -1,13 +1,15 @@
 import { Client } from './Client';
 import { ClientBase } from './ClientBase';
 import { OcppError } from './OcppError';
-import ocpp from './schemas';
+import OcppSchema from './schemas';
 import { Server } from './Server';
+import * as OcppType from './types';
 
 export {
   Server,
   Client,
   ClientBase,
-  ocpp,
   OcppError,
+  OcppSchema,
+  OcppType,
 };

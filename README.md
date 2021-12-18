@@ -11,7 +11,7 @@ WIP
 
 ## Usage
 
-###Central System
+### Central System
 
 ```ts
 import { Server } from '../src/Server';
@@ -39,7 +39,7 @@ server.on('connection', (client: ClientBase) => {
 });
 ```
 
-###Charging Point
+### Charging Point
 
 ```ts
 import { Client } from '../src/Client';
@@ -74,7 +74,7 @@ init();
 
 ## License
 
-###Internet Systems Consortium license
+### Internet Systems Consortium license
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice

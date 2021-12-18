@@ -6,7 +6,7 @@ Open Charge Point Protocol (OCPP, <http://www.openchargealliance.org/>) is a com
 
 ## Installation
 ```
-WIP
+npm i ocpp-ts
 ```
 
 ## Usage

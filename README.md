@@ -81,11 +81,10 @@ init();
 
 Add required certificates for Central System, note from OCPP protocol:
 
-``
-As some Charge Point implementations are using embedded systems with limited computing
-resources, we impose an additional restriction on the TLS configuration on the server side:
-The TLS certificate SHALL be an RSA certificate with a size no greater than 2048 bytes
-``
+*As some Charge Point implementations are using embedded systems with limited computing
+resources, we impose an additional restriction on the TLS configuration on the server side:*
+
+* The TLS certificate SHALL be an RSA certificate with a size no greater than 2048 bytes
 
 ```ts
 import https from 'https';

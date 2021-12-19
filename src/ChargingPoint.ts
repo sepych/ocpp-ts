@@ -1,14 +1,16 @@
 import WebSocket from 'ws';
+import { OutgoingHttpHeaders } from 'http';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
 
 export class ChargingPoint extends Client {
-  connect(centralSystemUrl: string): Promise<void> {
+  connect(centralSystemUrl: string, headers?: OutgoingHttpHeaders): Promise<void> {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(centralSystemUrl + this.getCpId(), [OCPP_PROTOCOL_1_6], {
         perMessageDeflate: false,
         protocolVersion: 13,
+        headers,
       });
 
       ws.on('upgrade', (res) => {

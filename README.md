@@ -1,6 +1,6 @@
-# OCPP (WIP)
+# OCPP
 
-Typescript package implementing the JSON version of the Open Charge Point Protocol (OCPP). Currently OCPP 1.6 (errata v4) is supported.
+Typescript package implementing the JSON version of the Open Charge Point Protocol (OCPP). Currently OCPP 1.6 is supported.
 
 Open Charge Point Protocol (OCPP, <http://www.openchargealliance.org/>) is a communication protocol between multiple charging stations ("charge points") and a single management software ("central system").
 

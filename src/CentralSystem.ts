@@ -38,8 +38,10 @@ export class CentralSystem extends EventEmitter {
         callback: (res: boolean, code?: number, message?: string) => void,
       ) => {
         const isAccept = await validateConnection(info.req.url);
-
-        console.debug(`Request for connect "${info.req.url}" (${info.req.headers['sec-websocket-protocol']}) - ${isAccept ? 'Valid identifier' : 'Invalid identifier'}`);
+        console.debug(info.req.url, info.req.headers);
+        // console.debug(`Request for connect "${info.req.url}"
+        // (${info.req.headers['sec-websocket-protocol']}) - ${isAccept ? 'Valid identifier' :
+        // 'Invalid identifier'}`);
 
         callback(isAccept, 404, 'Central System does not recognize the charge point identifier in the URL path');
       },

@@ -7,7 +7,7 @@ import { OCPP_PROTOCOL_1_6 } from './schemas';
 
 export type CSOptions = {
   wsOptions?: ServerOptions,
-  validateConnection?: (url: string | undefined) => boolean
+  validateConnection?: (cpId: string, req: IncomingMessage) => Promise<boolean>
 };
 
 export class CentralSystem extends EventEmitter {
@@ -37,13 +37,25 @@ export class CentralSystem extends EventEmitter {
         info: { origin: string; secure: boolean; req: IncomingMessage },
         callback: (res: boolean, code?: number, message?: string) => void,
       ) => {
-        const isAccept = await validateConnection(info.req.url);
         console.debug(info.req.url, info.req.headers);
-        // console.debug(`Request for connect "${info.req.url}"
-        // (${info.req.headers['sec-websocket-protocol']}) - ${isAccept ? 'Valid identifier' :
-        // 'Invalid identifier'}`);
-
-        callback(isAccept, 404, 'Central System does not recognize the charge point identifier in the URL path');
+        try {
+          const cpId = CentralSystem.getCpIdFromUrl(info.req.url);
+          if (!cpId) {
+            throw new Error('Invalid Charging point id');
+          }
+          const isAccepted = await validateConnection(cpId, info.req);
+          if (!isAccepted) {
+            throw new Error('The central system does not recognize the charging point or an'
+              + ' authorization error');
+          }
+          callback(true);
+        } catch (e) {
+          if (e instanceof Error) {
+            callback(false, 404, e.message);
+          } else {
+            callback(false, 404, 'Unknown error');
+          }
+        }
       },
       ...(this.options.wsOptions || {}),
     };
@@ -86,7 +98,7 @@ export class CentralSystem extends EventEmitter {
 
   static getCpIdFromUrl(url: string | undefined): string | undefined {
     if (url) {
-      const parts = url.split('/')
+      const parts = decodeURI(url).split('/')
       .filter((item) => item);
       return parts[parts.length - 1];
     }

@@ -18,7 +18,7 @@ import {
   CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from 'ocpp-ts';
 
-const cs = new CentralSystem({});
+const cs = new CentralSystem();
 cs.listen(9220);
 cs.on('connection', (client: Client) => {
   console.log(`Client ${client.getCpId()} connected`);
@@ -75,5 +75,46 @@ async function init() {
 }
 
 init();
+```
+
+## Security
+
+Add required certificates for Central System, note from OCPP protocol:
+
+``
+As some Charge Point implementations are using embedded systems with limited computing
+resources, we impose an additional restriction on the TLS configuration on the server side:
+The TLS certificate SHALL be an RSA certificate with a size no greater than 2048 bytes
+``
+
+```ts
+import https from 'https';
+import fs from 'fs';
+import { IncomingMessage } from 'http';
+import { CentralSystem } from 'ocpp-ts';
+
+const server = https.createServer({
+    cert: fs.readFileSync('certificate.pem'),
+    key: fs.readFileSync('key.pem')
+});
+const cs = new CentralSystem({ 
+  wsOptions: {
+    server
+  },
+  validateConnection: (cpId: string, req: IncomingMessage): Promise<boolean> => {
+    // validate an authorization header
+    // ...
+    return Promise.resolve(isAuthorized);
+  }
+});
+cs.listen(9220);
+```
+
+If the central system requires authorization, an authorization header can be placed as the second parameter.
+
+```ts
+await cp.connect('wss://eparking.fi/webServices/ocpp/', {
+  Authorization: getBasicAuth(),
+});
 ```
 

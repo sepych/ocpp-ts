@@ -15,19 +15,19 @@ npm i ocpp-ts
 
 ```ts
 import {
-  Server, ClientBase, OcppSchema, OcppType,
+  CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from 'ocpp-ts';
 
-const server = new Server({});
-server.listen(9220);
-server.on('connection', (client: ClientBase) => {
+const cs = new CentralSystem({});
+cs.listen(9220);
+cs.on('connection', (client: Client) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());
   });
 
-  client.on(OcppSchema.BootNotification.title, (request: OcppType.BootNotificationRequest, cb: (response: OcppType.BootNotificationResponse) => void) => {
-    const response: OcppType.BootNotificationResponse = {
+  client.on(events.BootNotification, (request: OcppTypes.BootNotificationRequest, cb: (response: OcppTypes.BootNotificationResponse) => void) => {
+    const response: OcppTypes.BootNotificationResponse = {
       status: 'Accepted',
       currentTime: new Date().toISOString(),
       interval: 60,
@@ -41,28 +41,28 @@ server.on('connection', (client: ClientBase) => {
 
 ```ts
 import {
-  Client, OcppSchema, OcppError, OcppType,
+  Client, OcppError, OcppType, ChargingPointRequests as requests,
 } from 'ocpp-ts';
 
-const client = new Client('CP1111');
+const cp = new ChargingPoint('CP1111');
 
 async function init() {
-  await client.connect('ws://localhost:9220/webServices/ocpp/');
-  const boot: OcppType.BootNotificationRequest = {
+  await cp.connect('ws://localhost:9220/webServices/ocpp/');
+  const boot: OcppTypes.BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
   };
 
   try {
-    const bootResp: OcppType.BootNotificationResponse = await client.callRequest(OcppSchema.BootNotification.title, boot);
+    const bootResp: OcppTypes.BootNotificationResponse = await cp.callRequest(requests.BootNotification, boot);
     if (bootResp.status === 'Accepted') {
-      const transaction: OcppType.StartTransactionRequest = {
+      const transaction: OcppTypes.StartTransactionRequest = {
         connectorId: 0,
         idTag: '1234',
         meterStart: 0,
         timestamp: new Date().toISOString(),
       };
-      const transactionResp: OcppType.StartTransactionResponse = await client.callRequest(OcppSchema.StartTransaction.title, transaction);
+      const transactionResp: OcppTypes.StartTransactionResponse = await cp.callRequest(requests.StartTransaction, transaction);
       if (transactionResp.idTagInfo.status === 'Accepted') {
         console.log('Starting transaction...');
       }

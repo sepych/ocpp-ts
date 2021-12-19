@@ -116,37 +116,45 @@ export default {
   UpdateFirmwareResponse,
 };
 
-export const CP_ACTIONS = {
-  Authorize: Authorize.title,
-  BootNotification: BootNotification.title,
-  DataTransfer: DataTransfer.title,
-  DiagnosticsStatusNotification: DiagnosticsStatusNotification.title,
-  FirmwareStatusNotification: FirmwareStatusNotification.title,
-  Heartbeat: Heartbeat.title,
-  MeterValues: MeterValues.title,
-  StartTransaction: StartTransaction.title,
-  StatusNotification: StatusNotification.title,
-  StopTransaction: StopTransaction.title,
+export function formatSchemaAction(action: string) {
+  // for some reason schema titles contains "Request" postfix
+  const search = 'Request';
+  return action.replace(new RegExp(`${search}([^${search}]*)$`), '$1');
+}
+
+export const ChargingPointRequests = {
+  Authorize: formatSchemaAction(Authorize.title),
+  BootNotification: formatSchemaAction(BootNotification.title),
+  DataTransfer: formatSchemaAction(DataTransfer.title),
+  DiagnosticsStatusNotification: formatSchemaAction(DiagnosticsStatusNotification.title),
+  FirmwareStatusNotification: formatSchemaAction(FirmwareStatusNotification.title),
+  Heartbeat: formatSchemaAction(Heartbeat.title),
+  MeterValues: formatSchemaAction(MeterValues.title),
+  StartTransaction: formatSchemaAction(StartTransaction.title),
+  StatusNotification: formatSchemaAction(StatusNotification.title),
+  StopTransaction: formatSchemaAction(StopTransaction.title),
 };
 
-export const CS_ACTIONS = {
-  CancelReservation: CancelReservation.title,
-  ChangeAvailability: ChangeAvailability.title,
-  ChangeConfiguration: ChangeConfiguration.title,
-  ClearCache: ClearCache.title,
-  ClearChargingProfile: ClearChargingProfile.title,
-  DataTransfer: DataTransfer.title,
-  GetCompositeSchedule: GetCompositeSchedule.title,
-  GetConfiguration: GetConfiguration.title,
-  GetDiagnostics: GetDiagnostics.title,
-  GetLocalListVersion: GetLocalListVersion.title,
-  RemoteStartTransaction: RemoteStartTransaction.title,
-  RemoteStopTransaction: RemoteStopTransaction.title,
-  ReserveNow: ReserveNow.title,
-  Reset: Reset.title,
-  SendLocalList: SendLocalList.title,
-  SetChargingProfile: SetChargingProfile.title,
-  TriggerMessage: TriggerMessage.title,
-  UnlockConnector: UnlockConnector.title,
-  UpdateFirmware: UpdateFirmware.title,
+export const CentralSystemRequests = {
+  CancelReservation: formatSchemaAction(CancelReservation.title),
+  ChangeAvailability: formatSchemaAction(ChangeAvailability.title),
+  ChangeConfiguration: formatSchemaAction(ChangeConfiguration.title),
+  ClearCache: formatSchemaAction(ClearCache.title),
+  ClearChargingProfile: formatSchemaAction(ClearChargingProfile.title),
+  DataTransfer: formatSchemaAction(DataTransfer.title),
+  GetCompositeSchedule: formatSchemaAction(GetCompositeSchedule.title),
+  GetConfiguration: formatSchemaAction(GetConfiguration.title),
+  GetDiagnostics: formatSchemaAction(GetDiagnostics.title),
+  GetLocalListVersion: formatSchemaAction(GetLocalListVersion.title),
+  RemoteStartTransaction: formatSchemaAction(RemoteStartTransaction.title),
+  RemoteStopTransaction: formatSchemaAction(RemoteStopTransaction.title),
+  ReserveNow: formatSchemaAction(ReserveNow.title),
+  Reset: formatSchemaAction(Reset.title),
+  SendLocalList: formatSchemaAction(SendLocalList.title),
+  SetChargingProfile: formatSchemaAction(SetChargingProfile.title),
+  TriggerMessage: formatSchemaAction(TriggerMessage.title),
+  UnlockConnector: formatSchemaAction(UnlockConnector.title),
+  UpdateFirmware: formatSchemaAction(UpdateFirmware.title),
 };
+
+export const OCPP_PROTOCOL_1_6 = 'ocpp1.6';

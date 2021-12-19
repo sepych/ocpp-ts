@@ -3,8 +3,7 @@ import WebSocket, { ServerOptions } from 'ws';
 import { IncomingMessage } from 'http';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
-
-const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
+import { OCPP_PROTOCOL_1_6 } from './schemas';
 
 export type CSOptions = {
   wsOptions?: ServerOptions,

@@ -1,5 +1,5 @@
 import {
- CentralSystem, Client, OcppType, CP_ACTIONS,
+ CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from '../src';
 
 const cs = new CentralSystem({});
@@ -10,8 +10,8 @@ cs.on('connection', (client: Client) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());
   });
 
-  client.on(CP_ACTIONS.BootNotification, (request: OcppType.BootNotificationRequest, cb: (response: OcppType.BootNotificationResponse) => void) => {
-    const response: OcppType.BootNotificationResponse = {
+  client.on(events.BootNotification, (request: OcppTypes.BootNotificationRequest, cb: (response: OcppTypes.BootNotificationResponse) => void) => {
+    const response: OcppTypes.BootNotificationResponse = {
       status: 'Accepted',
       currentTime: new Date().toISOString(),
       interval: 60,

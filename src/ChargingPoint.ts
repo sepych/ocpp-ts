@@ -1,8 +1,7 @@
 import WebSocket from 'ws';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
-
-export const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
+import { OCPP_PROTOCOL_1_6 } from './schemas';
 
 export class ChargingPoint extends Client {
   connect(centralSystemUrl: string): Promise<void> {

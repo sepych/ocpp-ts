@@ -19,9 +19,9 @@ export class Client extends EventEmitter {
     this.connection = connection;
   }
 
-  callRequest(action: string, payload: any): Promise<any> {
+  callRequest(request: string, payload: any): Promise<any> {
     if (this.connection) {
-      return this.connection.callRequest(action, payload);
+      return this.connection.callRequest(request, payload);
     }
     throw new Error('Charging point not connected to central system');
   }

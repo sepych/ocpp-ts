@@ -55,14 +55,13 @@ export class Protocol {
     }
   }
 
-  public callRequest(action: string, payload: any): Promise<any> {
+  public callRequest(request: string, payload: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const formattedAction = Protocol.formatSchemaAction(action);
         const messageId = uuidv4();
         const result = JSON.stringify([CALL_MESSAGE,
           messageId,
-          formattedAction,
+          request,
           payload]);
         this.socket.send(result);
         this.pendingCalls[messageId] = {
@@ -119,11 +118,11 @@ export class Protocol {
     }
   }
 
-  private async onCall(messageId: string, action: string, payload: any) {
+  private async onCall(messageId: string, request: string, payload: any) {
     // @ts-ignore
-    const schema = schemas[action];
+    const schema = schemas[request];
     if (!schema) {
-      this.callError(messageId, new OcppError(ERROR_NOTIMPLEMENTED, `Action ${action} not found`));
+      this.callError(messageId, new OcppError(ERROR_NOTIMPLEMENTED, `Action ${request} not found`));
       return;
     }
 
@@ -151,16 +150,15 @@ export class Protocol {
         reject(new OcppError(ERROR_INTERNALERROR, 'No response from the handler'));
       }, 10000);
 
-      const deformattedAction = Protocol.deFormatSchemaAction(action);
-      const hasListener = this.eventEmitter.emit(deformattedAction, payload, (response: any) => {
+      const hasListener = this.eventEmitter.emit(request, payload, (response: any) => {
         resolve(response);
       });
       if (!hasListener) {
-        reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${deformattedAction}" not set`));
+        reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${request}" not set`));
       }
     });
     promise.then((response) => {
-      this.callResult(messageId, action, response);
+      this.callResult(messageId, request, response);
     })
     .catch((err: OcppError) => {
       this.callError(messageId, err);
@@ -180,16 +178,5 @@ export class Protocol {
         console.error(e.message);
       }
     }
-  }
-
-  static formatSchemaAction(action: string) {
-    // for some reason schema titles contains "Request" postfix
-    const search = 'Request';
-    return action.replace(new RegExp(`${search}([^${search}]*)$`), '$1');
-  }
-
-  static deFormatSchemaAction(action: string) {
-    // for some reason schema titles contains "Request" postfix
-    return `${action}Request`;
   }
 }

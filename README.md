@@ -18,7 +18,7 @@ import {
   CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from 'ocpp-ts';
 
-const cs = new CentralSystem();
+const cs = new CentralSystem({});
 cs.listen(9220);
 cs.on('connection', (client: Client) => {
   console.log(`Client ${client.getCpId()} connected`);

@@ -1,39 +1,28 @@
-import WebSocket from 'ws';
+import EventEmitter from 'events';
 import { Protocol } from './Protocol';
-import { ClientBase } from './ClientBase';
 
-export const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
+export class Client extends EventEmitter {
+  private connection: Protocol | null = null;
 
-export class Client extends ClientBase {
-  connect(centralSystemUrl: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const ws = new WebSocket(centralSystemUrl + this.getCpId(), [OCPP_PROTOCOL_1_6], {
-        perMessageDeflate: false,
-        protocolVersion: 13,
-      });
+  private cpId: string;
 
-      ws.on('upgrade', (res) => {
-        if (!res.headers['sec-websocket-protocol']) {
-          reject(new Error(`Server doesn't support protocol ${OCPP_PROTOCOL_1_6}`));
-        }
-      });
+  constructor(cpId: string) {
+    super();
+    this.cpId = cpId;
+  }
 
-      ws.on('close', () => {
-        console.debug('Connection is closed');
-        this.setConnection(null);
-      });
+  getCpId(): string {
+    return this.cpId;
+  }
 
-      ws.on('open', () => {
-        if (ws) {
-          ws.removeAllListeners('error');
-          this.setConnection(new Protocol(this, ws));
-          resolve();
-        }
-      });
+  setConnection(connection: Protocol | null): void {
+    this.connection = connection;
+  }
 
-      ws.on('error', (err) => {
-        reject(err);
-      });
-    });
+  callRequest(action: string, payload: any): Promise<any> {
+    if (this.connection) {
+      return this.connection.callRequest(action, payload);
+    }
+    throw new Error('Charging point not connected to central system');
   }
 }

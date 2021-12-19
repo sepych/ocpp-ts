@@ -115,3 +115,38 @@ export default {
   UpdateFirmware,
   UpdateFirmwareResponse,
 };
+
+export const CP_ACTIONS = {
+  Authorize: Authorize.title,
+  BootNotification: BootNotification.title,
+  DataTransfer: DataTransfer.title,
+  DiagnosticsStatusNotification: DiagnosticsStatusNotification.title,
+  FirmwareStatusNotification: FirmwareStatusNotification.title,
+  Heartbeat: Heartbeat.title,
+  MeterValues: MeterValues.title,
+  StartTransaction: StartTransaction.title,
+  StatusNotification: StatusNotification.title,
+  StopTransaction: StopTransaction.title,
+};
+
+export const CS_ACTIONS = {
+  CancelReservation: CancelReservation.title,
+  ChangeAvailability: ChangeAvailability.title,
+  ChangeConfiguration: ChangeConfiguration.title,
+  ClearCache: ClearCache.title,
+  ClearChargingProfile: ClearChargingProfile.title,
+  DataTransfer: DataTransfer.title,
+  GetCompositeSchedule: GetCompositeSchedule.title,
+  GetConfiguration: GetConfiguration.title,
+  GetDiagnostics: GetDiagnostics.title,
+  GetLocalListVersion: GetLocalListVersion.title,
+  RemoteStartTransaction: RemoteStartTransaction.title,
+  RemoteStopTransaction: RemoteStopTransaction.title,
+  ReserveNow: ReserveNow.title,
+  Reset: Reset.title,
+  SendLocalList: SendLocalList.title,
+  SetChargingProfile: SetChargingProfile.title,
+  TriggerMessage: TriggerMessage.title,
+  UnlockConnector: UnlockConnector.title,
+  UpdateFirmware: UpdateFirmware.title,
+};

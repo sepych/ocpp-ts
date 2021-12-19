@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import WebSocket, { ServerOptions } from 'ws';
 import { IncomingMessage } from 'http';
 import { Protocol } from './Protocol';
-import { ClientBase } from './ClientBase';
+import { Client } from './Client';
 
 const OCPP_PROTOCOL_1_6 = 'ocpp1.6';
 
@@ -11,12 +11,12 @@ export type CSOptions = {
   validateConnection?: (url: string | undefined) => boolean
 };
 
-export class Server extends EventEmitter {
+export class CentralSystem extends EventEmitter {
   options: CSOptions;
 
   server: WebSocket.Server | null = null;
 
-  clients: Array<ClientBase> = [];
+  clients: Array<Client> = [];
 
   constructor(options: CSOptions) {
     super();
@@ -57,7 +57,7 @@ export class Server extends EventEmitter {
   }
 
   onNewConnection(socket: WebSocket, req: IncomingMessage) {
-    const cpId = Server.getCpIdFromUrl(req.url);
+    const cpId = CentralSystem.getCpIdFromUrl(req.url);
     if (!socket.protocol || !cpId) {
       // From Spec: If the Central System does not agree to using one of the subprotocols offered
       // by the client, it MUST complete the WebSocket handshake with a response without a
@@ -71,7 +71,7 @@ export class Server extends EventEmitter {
       console.info(err, socket.readyState);
     });
 
-    const client = new ClientBase(cpId);
+    const client = new Client(cpId);
     client.setConnection(new Protocol(client, socket));
     socket.on('close', (code: number, reason: Buffer) => {
       const index = this.clients.indexOf(client);

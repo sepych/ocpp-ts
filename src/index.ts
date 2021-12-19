@@ -1,15 +1,17 @@
+import { ChargingPoint } from './ChargingPoint';
 import { Client } from './Client';
-import { ClientBase } from './ClientBase';
 import { OcppError } from './OcppError';
-import OcppSchema from './schemas';
-import { Server } from './Server';
+import OcppSchema, { CP_ACTIONS, CS_ACTIONS } from './schemas';
+import { CentralSystem } from './CentralSystem';
 import * as OcppType from './types';
 
 export {
-  Server,
+  CentralSystem,
+  ChargingPoint,
   Client,
-  ClientBase,
   OcppError,
   OcppSchema,
   OcppType,
+  CP_ACTIONS,
+  CS_ACTIONS,
 };

@@ -1,72 +1,54 @@
 import EventEmitter from 'events';
-import WebSocket, { ServerOptions } from 'ws';
-import { IncomingMessage } from 'http';
+import WebSocket, { WebSocketServer } from 'ws';
+import { IncomingMessage, createServer } from 'http';
+import stream from 'node:stream';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
 
-export type CSOptions = {
-  wsOptions?: ServerOptions,
-  validateConnection?: (cpId: string, req: IncomingMessage) => Promise<boolean>
-};
-
 export class CentralSystem extends EventEmitter {
-  options: CSOptions;
-
   server: WebSocket.Server | null = null;
 
   clients: Array<Client> = [];
 
-  constructor(options: CSOptions) {
-    super();
-    this.options = options;
-  }
-
-  listen(port = 9220, host?: string) {
-    const validateConnection = this.options.validateConnection || (() => true);
-    const wsOptions = {
-      port,
-      host,
+  listen(port = 9220) {
+    const server = createServer();
+    const wss = new WebSocketServer({
+      noServer: true,
       handleProtocols: (protocols: Set<string>) => {
         if (protocols.has(OCPP_PROTOCOL_1_6)) {
           return OCPP_PROTOCOL_1_6;
         }
         return false;
       },
-      verifyClient: async (
-        info: { origin: string; secure: boolean; req: IncomingMessage },
-        callback: (res: boolean, code?: number, message?: string) => void,
-      ) => {
-        console.debug(info.req.url, info.req.headers);
-        try {
-          const cpId = CentralSystem.getCpIdFromUrl(info.req.url);
-          if (!cpId) {
-            throw new Error('Invalid Charging point id');
-          }
-          const isAccepted = await validateConnection(cpId, info.req);
-          if (!isAccepted) {
-            throw new Error('The central system does not recognize the charging point or an'
-              + ' authorization error');
-          }
-          callback(true);
-        } catch (e) {
-          if (e instanceof Error) {
-            callback(false, 404, e.message);
-          } else {
-            callback(false, 404, 'Unknown error');
-          }
-        }
-      },
-      ...(this.options.wsOptions || {}),
-    };
-
-    this.server = new WebSocket.Server(wsOptions);
-
-    this.server.on('error', (err: Error) => {
-      console.info(err);
     });
 
-    this.server.on('connection', (ws, req) => this.onNewConnection(ws, req));
+    wss.on('connection', (ws, req) => this.onNewConnection(ws, req));
+
+    server.on('upgrade', (req: IncomingMessage, socket: stream.Duplex, head: Buffer) => {
+      const cpId = CentralSystem.getCpIdFromUrl(req.url);
+      if (!cpId) {
+        socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
+        socket.destroy();
+      } else if (this.listenerCount('authorization')) {
+        this.emit('authorization', cpId, req, (err?: Error) => {
+          if (err) {
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+            socket.destroy();
+          } else {
+            wss.handleUpgrade(req, socket, head, (ws) => {
+              wss.emit('connection', ws, req);
+            });
+          }
+        });
+      } else {
+        wss.handleUpgrade(req, socket, head, (ws) => {
+          wss.emit('connection', ws, req);
+        });
+      }
+    });
+
+    server.listen(port);
   }
 
   onNewConnection(socket: WebSocket, req: IncomingMessage) {
@@ -81,7 +63,7 @@ export class CentralSystem extends EventEmitter {
     }
 
     socket.on('error', (err) => {
-      console.info(err, socket.readyState);
+      console.info(err.message, socket.readyState);
     });
 
     const client = new Client(cpId);
@@ -98,7 +80,8 @@ export class CentralSystem extends EventEmitter {
 
   static getCpIdFromUrl(url: string | undefined): string | undefined {
     if (url) {
-      const parts = decodeURI(url).split('/')
+      const parts = decodeURI(url)
+      .split('/')
       .filter((item) => item);
       return parts[parts.length - 1];
     }

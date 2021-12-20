@@ -1,9 +1,9 @@
+import { IncomingMessage } from 'http';
 import {
  CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from '../src';
 
 const cs = new CentralSystem();
-cs.listen(9220);
 cs.on('connection', (client: Client) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
@@ -19,3 +19,10 @@ cs.on('connection', (client: Client) => {
     cb(response);
   });
 });
+
+cs.on('authorization', (cbId: string, req: IncomingMessage, cb: (err?: Error) => void) => {
+  console.log('authorization', cbId, req.headers.authorization);
+  // validate authorization header
+  cb(new Error('Unathorized'));
+});
+cs.listen(9220);

@@ -1,11 +1,15 @@
 import {
- ChargingPoint, OcppError, OcppTypes, ChargingPointRequests as requests,
+  ChargingPoint, OcppError, OcppTypes, ChargingPointRequests as requests,
 } from '../src';
 
 const cp = new ChargingPoint('CP1111');
-
-async function init() {
-  await cp.connect('ws://localhost:9220/webServices/ocpp/');
+cp.on('error', (err: Error) => {
+  console.log(err.message);
+});
+cp.on('close', () => {
+  console.log('Connection closed');
+});
+cp.on('connect', async () => {
   const boot: OcppTypes.BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
@@ -30,6 +34,5 @@ async function init() {
       console.error(e.message);
     }
   }
-}
-
-init();
+});
+cp.connect('ws://localhost:9220/webServices/ocpp/');

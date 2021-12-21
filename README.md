@@ -18,7 +18,7 @@ import {
   CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from 'ocpp-ts';
 
-const cs = new CentralSystem({});
+const cs = new CentralSystem();
 cs.listen(9220);
 cs.on('connection', (client: Client) => {
   console.log(`Client ${client.getCpId()} connected`);
@@ -45,9 +45,13 @@ import {
 } from 'ocpp-ts';
 
 const cp = new ChargingPoint('CP1111');
-
-async function init() {
-  await cp.connect('ws://localhost:9220/webServices/ocpp/');
+cp.on('error', (err: Error) => {
+  console.log(err.message);
+});
+cp.on('close', () => {
+  console.log('Connection closed');
+});
+cp.on('connect', async () => {
   const boot: OcppTypes.BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
@@ -72,9 +76,8 @@ async function init() {
       console.error(e.message);
     }
   }
-}
-
-init();
+});
+cp.connect('ws://localhost:9220/webServices/ocpp/');
 ```
 
 ## Security
@@ -87,26 +90,16 @@ resources, we impose an additional restriction on the TLS configuration on the s
 * The TLS certificate SHALL be an RSA certificate with a size no greater than 2048 bytes
 
 ```ts
-import https from 'https';
-import fs from 'fs';
-import { IncomingMessage } from 'http';
-import { CentralSystem } from 'ocpp-ts';
-
-const server = https.createServer({
-    cert: fs.readFileSync('certificate.pem'),
-    key: fs.readFileSync('key.pem')
+cs.on('authorization', (cbId: string, req: IncomingMessage, cb: (err?: Error) => void) => {
+  console.log('authorization', cbId, req.headers.authorization);
+  // validate authorization header
+  // cb(new Error('Unathorized')); // Deny
+  cb(); // Accept
 });
-const cs = new CentralSystem({ 
-  wsOptions: {
-    server
-  },
-  validateConnection: (cpId: string, req: IncomingMessage): Promise<boolean> => {
-    // validate an authorization header
-    // ...
-    return Promise.resolve(isAuthorized);
-  }
+cs.listen(9220, {
+  cert: fs.readFileSync('cert.pem'),
+  key: fs.readFileSync('key.pem'),
 });
-cs.listen(9220);
 ```
 
 If the central system requires authorization, an authorization header can be placed as the second parameter.

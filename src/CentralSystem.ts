@@ -79,11 +79,16 @@ export class CentralSystem extends EventEmitter {
   }
 
   static getCpIdFromUrl(url: string | undefined): string | undefined {
-    if (url) {
-      const parts = decodeURI(url)
-      .split('/')
-      .filter((item) => item);
-      return parts[parts.length - 1];
+    try {
+      if (url) {
+        const urlObj = new URL(url);
+        const encodedCpId = urlObj.pathname.split('/').pop();
+        if (encodedCpId) {
+          return decodeURI(encodedCpId);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
     return undefined;
   }

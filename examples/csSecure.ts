@@ -1,6 +1,7 @@
 import { IncomingMessage } from 'http';
+import fs from 'fs';
 import {
- CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
+  CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
 } from '../src';
 
 const cs = new CentralSystem();
@@ -25,4 +26,7 @@ cs.on('authorization', (cbId: string, req: IncomingMessage, cb: (err?: Error) =>
   // validate authorization header
   cb(new Error('Unathorized'));
 });
-cs.listen(9220);
+cs.listen(9220, {
+  cert: fs.readFileSync('cert.pem'),
+  key: fs.readFileSync('key.pem'),
+});

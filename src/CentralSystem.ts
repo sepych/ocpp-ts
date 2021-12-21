@@ -1,7 +1,9 @@
 import EventEmitter from 'events';
 import WebSocket, { WebSocketServer } from 'ws';
-import { IncomingMessage, createServer } from 'http';
+import { createServer as createHttpsServer } from 'https';
+import { createServer as createHttpServer, IncomingMessage } from 'http';
 import stream from 'node:stream';
+import { SecureContextOptions } from 'tls';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
@@ -11,8 +13,14 @@ export class CentralSystem extends EventEmitter {
 
   clients: Array<Client> = [];
 
-  listen(port = 9220) {
-    const server = createServer();
+  listen(port = 9220, options?: SecureContextOptions) {
+    let server;
+    if (options) {
+      server = createHttpsServer(options || {});
+    } else {
+      server = createHttpServer();
+    }
+
     const wss = new WebSocketServer({
       noServer: true,
       handleProtocols: (protocols: Set<string>) => {
@@ -81,10 +89,9 @@ export class CentralSystem extends EventEmitter {
   static getCpIdFromUrl(url: string | undefined): string | undefined {
     try {
       if (url) {
-        const urlObj = new URL(url);
-        const encodedCpId = urlObj.pathname.split('/').pop();
+        const encodedCpId = url.split('/').pop();
         if (encodedCpId) {
-          return decodeURI(encodedCpId);
+          return decodeURI(encodedCpId.split('?')[0]);
         }
       }
     } catch (e) {

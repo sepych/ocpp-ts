@@ -60,16 +60,7 @@ cp.on('connect', async () => {
   try {
     const bootResp: OcppTypes.BootNotificationResponse = await cp.callRequest(requests.BootNotification, boot);
     if (bootResp.status === 'Accepted') {
-      const transaction: OcppTypes.StartTransactionRequest = {
-        connectorId: 0,
-        idTag: '1234',
-        meterStart: 0,
-        timestamp: new Date().toISOString(),
-      };
-      const transactionResp: OcppTypes.StartTransactionResponse = await cp.callRequest(requests.StartTransaction, transaction);
-      if (transactionResp.idTagInfo.status === 'Accepted') {
-        console.log('Starting transaction...');
-      }
+      console.log('CP accepted');
     }
   } catch (e) {
     if (e instanceof Error || e instanceof OcppError) {
@@ -105,7 +96,7 @@ cs.listen(9220, {
 If the central system requires authorization, an authorization header can be placed as the second parameter.
 
 ```ts
-await cp.connect('wss://eparking.fi/webServices/ocpp/', {
+cp.connect('wss://eparking.fi/webServices/ocpp/', {
   Authorization: getBasicAuth(),
 });
 ```

@@ -24,7 +24,8 @@ cs.on('connection', (client: Client) => {
 cs.on('authorization', (cbId: string, req: IncomingMessage, cb: (err?: Error) => void) => {
   console.log('authorization', cbId, req.headers.authorization);
   // validate authorization header
-  cb(new Error('Unathorized'));
+  // cb(new Error('Unathorized')); // Deny
+  cb(); // Accept
 });
 cs.listen(9220, {
   cert: fs.readFileSync('cert.pem'),

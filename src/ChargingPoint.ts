@@ -18,9 +18,9 @@ export class ChargingPoint extends Client {
       }
     });
 
-    ws.on('close', () => {
+    ws.on('close', (code: number, reason: Buffer) => {
       this.setConnection(null);
-      this.emit('close');
+      this.emit('close', code, reason);
     });
 
     ws.on('open', () => {

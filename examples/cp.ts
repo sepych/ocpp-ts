@@ -9,6 +9,7 @@ cp.on('error', (err: Error) => {
 cp.on('close', () => {
   console.log('Connection closed');
 });
+
 cp.on('connect', async () => {
   const boot: OcppTypes.BootNotificationRequest = {
     chargePointVendor: 'eParking',

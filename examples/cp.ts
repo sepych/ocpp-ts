@@ -1,8 +1,8 @@
 import {
-  ChargingPoint, OcppError, OcppTypes, ChargingPointRequests as requests,
+  OcppClient, OcppError, OcppTypes, ChargingPointRequests as requests,
 } from '../src';
 
-const cp = new ChargingPoint('CP1111');
+const cp = new OcppClient('CP1111');
 cp.on('error', (err: Error) => {
   console.log(err.message);
 });

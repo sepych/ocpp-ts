@@ -1,10 +1,10 @@
 import WebSocket from 'ws';
 import { OutgoingHttpHeaders } from 'http';
 import { Protocol } from './Protocol';
-import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
+import { OcppClient } from './OcppClient';
 
-export class ChargingPoint extends Client {
+export class ChargingPoint extends OcppClient {
   connect(centralSystemUrl: string, headers?: OutgoingHttpHeaders) {
     const ws = new WebSocket(centralSystemUrl + this.getCpId(), [OCPP_PROTOCOL_1_6], {
       perMessageDeflate: false,

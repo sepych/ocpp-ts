@@ -1,5 +1,7 @@
 import {
-  OcppClient, OcppError, OcppTypes,
+  BootNotificationRequest,
+  BootNotificationResponse,
+  OcppClient, OcppError,
 } from '../src';
 
 const chargingPointSimple = new OcppClient('CP1111');
@@ -11,13 +13,13 @@ chargingPointSimple.on('close', () => {
 });
 
 chargingPointSimple.on('connect', async () => {
-  const boot: OcppTypes.BootNotificationRequest = {
+  const boot: BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
   };
 
   try {
-    const bootResp: OcppTypes.BootNotificationResponse = await chargingPointSimple.callRequest('BootNotification', boot);
+    const bootResp: BootNotificationResponse = await chargingPointSimple.callRequest('BootNotification', boot);
     if (bootResp.status === 'Accepted') {
       console.log('Bootnotification accepted');
     }

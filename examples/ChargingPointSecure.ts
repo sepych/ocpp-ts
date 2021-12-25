@@ -1,5 +1,5 @@
 import {
-  OcppError, OcppTypes, OcppClient,
+  OcppError, OcppClient, BootNotificationRequest, BootNotificationResponse, StartTransactionRequest, StartTransactionResponse,
 } from '../src';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -12,21 +12,21 @@ cp.on('close', () => {
   console.log('Connection closed');
 });
 cp.on('connect', async () => {
-  const boot: OcppTypes.BootNotificationRequest = {
+  const boot: BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
   };
 
   try {
-    const bootResp: OcppTypes.BootNotificationResponse = await cp.callRequest('BootNotification', boot);
+    const bootResp: BootNotificationResponse = await cp.callRequest('BootNotification', boot);
     if (bootResp.status === 'Accepted') {
-      const transaction: OcppTypes.StartTransactionRequest = {
+      const transaction: StartTransactionRequest = {
         connectorId: 0,
         idTag: '1234',
         meterStart: 0,
         timestamp: new Date().toISOString(),
       };
-      const transactionResp: OcppTypes.StartTransactionResponse = await cp.callRequest('StartTransaction', transaction);
+      const transactionResp: StartTransactionResponse = await cp.callRequest('StartTransaction', transaction);
       if (transactionResp.idTagInfo.status === 'Accepted') {
         console.log('Starting transaction...');
       }

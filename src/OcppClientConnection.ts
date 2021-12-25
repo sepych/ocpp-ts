@@ -1,4 +1,4 @@
-import { OcppClientImpl } from './OcppClientImpl';
+import { OcppClientImpl } from './impl/OcppClientImpl';
 import {
   AuthorizeRequest,
   AuthorizeResponse,
@@ -57,8 +57,17 @@ import {
   UpdateFirmwareRequest,
   UpdateFirmwareResponse,
 } from './types';
+import { Protocol } from './Protocol';
 
 export class OcppClientConnection extends OcppClientImpl {
+  getCpId(): string {
+    return super.getCpId();
+  }
+
+  setConnection(connection: Protocol | null): void {
+    super.setConnection(connection);
+  }
+
   on(event: 'Authorize', listener: (request: AuthorizeRequest, cb:(response:AuthorizeResponse) => void) => void): this;
   on(event: 'BootNotification', listener: (request: BootNotificationRequest, cb:(response:BootNotificationResponse) => void) => void): this;
   on(event: 'DataTransfer', listener: (request: DataTransferRequest, cb:(response:DataTransferResponse) => void) => void): this;

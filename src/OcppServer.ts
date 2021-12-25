@@ -5,7 +5,7 @@ import { createServer as createHttpServer, IncomingMessage } from 'http';
 import stream from 'node:stream';
 import { SecureContextOptions } from 'tls';
 import { Protocol } from './Protocol';
-import { OcppClientImpl } from './OcppClientImpl';
+import { OcppClientImpl } from './impl/OcppClientImpl';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
 import { OcppClientConnection } from './OcppClientConnection';
 

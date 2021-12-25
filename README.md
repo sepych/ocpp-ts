@@ -15,19 +15,19 @@ npm i ocpp-ts
 
 ```ts
 import {
-  CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
+  OcppServer, OcppClientConnection, BootNotificationRequest, BootNotificationResponse,
 } from 'ocpp-ts';
 
-const centralSystemSimple = new CentralSystem();
+const centralSystemSimple = new OcppServer();
 centralSystemSimple.listen(9220);
-centralSystemSimple.on('connection', (client: Client) => {
+centralSystemSimple.on('connection', (client: OcppClientConnection) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());
   });
 
-  client.on(events.BootNotification, (request: OcppTypes.BootNotificationRequest, cb: (response: OcppTypes.BootNotificationResponse) => void) => {
-    const response: OcppTypes.BootNotificationResponse = {
+  client.on('BootNotification', (request: BootNotificationRequest, cb: (response: BootNotificationResponse) => void) => {
+    const response: BootNotificationResponse = {
       status: 'Accepted',
       currentTime: new Date().toISOString(),
       interval: 60,
@@ -41,26 +41,29 @@ centralSystemSimple.on('connection', (client: Client) => {
 
 ```ts
 import {
-  Client, OcppError, OcppType, ChargingPointRequests as requests,
+  BootNotificationRequest,
+  BootNotificationResponse,
+  OcppClient, OcppError,
 } from 'ocpp-ts';
 
-const chargingPointSimple = new ChargingPoint('CP1111');
+const chargingPointSimple = new OcppClient('CP1111');
 chargingPointSimple.on('error', (err: Error) => {
   console.log(err.message);
 });
 chargingPointSimple.on('close', () => {
   console.log('Connection closed');
 });
+
 chargingPointSimple.on('connect', async () => {
-  const boot: OcppTypes.BootNotificationRequest = {
+  const boot: BootNotificationRequest = {
     chargePointVendor: 'eParking',
     chargePointModel: 'NECU-T2',
   };
 
   try {
-    const bootResp: OcppTypes.BootNotificationResponse = await chargingPointSimple.callRequest(requests.BootNotification, boot);
+    const bootResp: BootNotificationResponse = await chargingPointSimple.callRequest('BootNotification', boot);
     if (bootResp.status === 'Accepted') {
-      console.log('CP accepted');
+      console.log('Bootnotification accepted');
     }
   } catch (e) {
     if (e instanceof Error || e instanceof OcppError) {
@@ -68,7 +71,7 @@ chargingPointSimple.on('connect', async () => {
     }
   }
 });
-chargingPointSimple.connect('ws://localhost:9220/webServices/ocpp/');
+chargingPointSimple.connect('ws://localhost:9220/');
 ```
 
 ## Security
@@ -96,7 +99,7 @@ centralSystemSimple.listen(9220, {
 If the central system requires authorization, an authorization header can be placed as the second parameter.
 
 ```ts
-chargingPointSimple.connect('wss://eparking.fi/webServices/ocpp/', {
+chargingPointSimple.connect('wss://eparking.fi/ocpp/', {
   Authorization: getBasicAuth(),
 });
 ```

@@ -1,10 +1,10 @@
 import EventEmitter from 'events';
 import { OutgoingHttpHeaders } from 'http';
 import WebSocket from 'ws';
-import { Protocol } from '../Protocol';
-import { OCPP_PROTOCOL_1_6 } from '../schemas';
+import { Protocol } from './Protocol';
+import { OCPP_PROTOCOL_1_6 } from './schemas';
 
-export class OcppClientImpl extends EventEmitter {
+export class Client extends EventEmitter {
   private connection: Protocol | null = null;
 
   private cpId: string;

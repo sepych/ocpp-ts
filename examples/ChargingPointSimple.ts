@@ -29,4 +29,4 @@ chargingPointSimple.on('connect', async () => {
     }
   }
 });
-chargingPointSimple.connect('ws://localhost:9220/webServices/ocpp/');
+chargingPointSimple.connect('ws://localhost:9220/');

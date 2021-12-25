@@ -57,9 +57,9 @@ import {
   UpdateFirmwareRequest,
   UpdateFirmwareResponse,
 } from './types';
-import { OcppClientImpl } from './impl/OcppClientImpl';
+import { Client } from './impl/Client';
 
-export class OcppClient extends OcppClientImpl {
+export class OcppClient extends Client {
   connect(centralSystemUrl: string, headers?: OutgoingHttpHeaders) {
     super.connect(centralSystemUrl, headers);
   }

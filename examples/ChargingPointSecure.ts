@@ -38,4 +38,4 @@ cp.on('connect', async () => {
   }
 });
 
-cp.connect('wss://example.com:8081/webServices/ocpp/');
+cp.connect('wss://example.com:8081/');

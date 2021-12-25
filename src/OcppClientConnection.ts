@@ -1,4 +1,4 @@
-import { OcppClientImpl } from './impl/OcppClientImpl';
+import { Client } from './impl/Client';
 import {
   AuthorizeRequest,
   AuthorizeResponse,
@@ -57,9 +57,9 @@ import {
   UpdateFirmwareRequest,
   UpdateFirmwareResponse,
 } from './types';
-import { Protocol } from './Protocol';
+import { Protocol } from './impl/Protocol';
 
-export class OcppClientConnection extends OcppClientImpl {
+export class OcppClientConnection extends Client {
   getCpId(): string {
     return super.getCpId();
   }

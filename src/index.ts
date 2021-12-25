@@ -1,16 +1,12 @@
-import { ChargingPoint } from './ChargingPoint';
-import { Client } from './Client';
-import { OcppError } from './OcppError';
-import { ChargingPointRequests, CentralSystemRequests } from './schemas';
-import { CentralSystem } from './CentralSystem';
-import * as OcppTypes from './types';
+import { OcppError } from './impl/OcppError';
+import { OcppServer } from './OcppServer';
+import { OcppClient } from './OcppClient';
+import { OcppClientConnection } from './OcppClientConnection';
 
+export * from './types';
 export {
-  CentralSystem,
-  ChargingPoint,
-  Client,
+  OcppServer,
+  OcppClientConnection,
+  OcppClient,
   OcppError,
-  OcppTypes,
-  ChargingPointRequests,
-  CentralSystemRequests,
 };

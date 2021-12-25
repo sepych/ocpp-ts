@@ -1,18 +1,18 @@
 import { IncomingMessage } from 'http';
 import fs from 'fs';
 import {
-  CentralSystem, Client, OcppTypes, ChargingPointRequests as events,
+  OcppServer, OcppClientConnection, BootNotificationRequest, BootNotificationResponse,
 } from '../src';
 
-const cs = new CentralSystem();
-cs.on('connection', (client: Client) => {
+const cs = new OcppServer();
+cs.on('connection', (client: OcppClientConnection) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());
   });
 
-  client.on(events.BootNotification, (request: OcppTypes.BootNotificationRequest, cb: (response: OcppTypes.BootNotificationResponse) => void) => {
-    const response: OcppTypes.BootNotificationResponse = {
+  client.on('BootNotification', (request: BootNotificationRequest, cb: (response: BootNotificationResponse) => void) => {
+    const response: BootNotificationResponse = {
       status: 'Accepted',
       currentTime: new Date().toISOString(),
       interval: 60,

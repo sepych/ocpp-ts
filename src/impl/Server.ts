@@ -1,19 +1,20 @@
 import EventEmitter from 'events';
 import WebSocket, { WebSocketServer } from 'ws';
+import { SecureContextOptions } from 'tls';
 import { createServer as createHttpsServer } from 'https';
 import { createServer as createHttpServer, IncomingMessage } from 'http';
 import stream from 'node:stream';
-import { SecureContextOptions } from 'tls';
-import { Protocol } from './Protocol';
-import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
+import { Client } from './Client';
+import { OcppClientConnection } from '../OcppClientConnection';
+import { Protocol } from './Protocol';
 
-export class CentralSystem extends EventEmitter {
-  server: WebSocket.Server | null = null;
+export class Server extends EventEmitter {
+  private server: WebSocket.Server | null = null;
 
-  clients: Array<Client> = [];
+  private clients: Array<Client> = [];
 
-  listen(port = 9220, options?: SecureContextOptions) {
+  protected listen(port = 9220, options?: SecureContextOptions) {
     let server;
     if (options) {
       server = createHttpsServer(options || {});
@@ -34,7 +35,7 @@ export class CentralSystem extends EventEmitter {
     wss.on('connection', (ws, req) => this.onNewConnection(ws, req));
 
     server.on('upgrade', (req: IncomingMessage, socket: stream.Duplex, head: Buffer) => {
-      const cpId = CentralSystem.getCpIdFromUrl(req.url);
+      const cpId = Server.getCpIdFromUrl(req.url);
       if (!cpId) {
         socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
         socket.destroy();
@@ -59,8 +60,8 @@ export class CentralSystem extends EventEmitter {
     server.listen(port);
   }
 
-  onNewConnection(socket: WebSocket, req: IncomingMessage) {
-    const cpId = CentralSystem.getCpIdFromUrl(req.url);
+  private onNewConnection(socket: WebSocket, req: IncomingMessage) {
+    const cpId = Server.getCpIdFromUrl(req.url);
     if (!socket.protocol || !cpId) {
       // From Spec: If the Central System does not agree to using one of the subprotocols offered
       // by the client, it MUST complete the WebSocket handshake with a response without a
@@ -70,17 +71,19 @@ export class CentralSystem extends EventEmitter {
       return;
     }
 
+    const client = new OcppClientConnection(cpId);
+    client.setConnection(new Protocol(client, socket));
+
     socket.on('error', (err) => {
       console.info(err.message, socket.readyState);
+      client.emit('error', err);
     });
 
-    const client = new Client(cpId);
-    client.setConnection(new Protocol(client, socket));
     socket.on('close', (code: number, reason: Buffer) => {
       const index = this.clients.indexOf(client);
       this.clients.splice(index, 1);
       client.emit('close', code, reason);
-      this.emit('close', client, code, reason);
+      // this.emit('close', client, code, reason);
     });
     this.clients.push(client);
     this.emit('connection', client);
@@ -89,7 +92,8 @@ export class CentralSystem extends EventEmitter {
   static getCpIdFromUrl(url: string | undefined): string | undefined {
     try {
       if (url) {
-        const encodedCpId = url.split('/').pop();
+        const encodedCpId = url.split('/')
+        .pop();
         if (encodedCpId) {
           return decodeURI(encodedCpId.split('?')[0]);
         }

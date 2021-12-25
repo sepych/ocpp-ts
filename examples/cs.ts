@@ -1,10 +1,10 @@
 import {
-  CentralSystem, OcppTypes, ChargingPointRequests as events, OcppClient,
+  CentralSystem, OcppTypes, ChargingPointRequests as events, ClientConnection,
 } from '../src';
 
 const cs = new CentralSystem();
 cs.listen(9220);
-cs.on('connection', (client: OcppClient) => {
+cs.on('connection', (client: ClientConnection) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());

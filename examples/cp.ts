@@ -1,8 +1,8 @@
 import {
-  OcppClient, OcppError, OcppTypes, ChargingPointRequests as requests,
+  ChargingPoint, OcppError, OcppTypes,
 } from '../src';
 
-const cp = new OcppClient('CP1111');
+const cp = new ChargingPoint('CP1111');
 cp.on('error', (err: Error) => {
   console.log(err.message);
 });
@@ -17,7 +17,7 @@ cp.on('connect', async () => {
   };
 
   try {
-    const bootResp: OcppTypes.BootNotificationResponse = await cp.callRequest(requests.BootNotification, boot);
+    const bootResp: OcppTypes.BootNotificationResponse = await cp.callRequest('BootNotification', boot);
     if (bootResp.status === 'Accepted') {
       const transaction: OcppTypes.StartTransactionRequest = {
         connectorId: 0,
@@ -25,7 +25,7 @@ cp.on('connect', async () => {
         meterStart: 0,
         timestamp: new Date().toISOString(),
       };
-      const transactionResp: OcppTypes.StartTransactionResponse = await cp.callRequest(requests.StartTransaction, transaction);
+      const transactionResp: OcppTypes.StartTransactionResponse = await cp.callRequest('StartTransaction', transaction);
       if (transactionResp.idTagInfo.status === 'Accepted') {
         console.log('Starting transaction...');
       }

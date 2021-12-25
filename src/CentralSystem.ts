@@ -7,6 +7,7 @@ import { SecureContextOptions } from 'tls';
 import { Protocol } from './Protocol';
 import { Client } from './Client';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
+import { ClientConnection } from './ClientConnection';
 
 export class CentralSystem extends EventEmitter {
   server: WebSocket.Server | null = null;
@@ -74,7 +75,7 @@ export class CentralSystem extends EventEmitter {
       console.info(err.message, socket.readyState);
     });
 
-    const client = new Client(cpId);
+    const client = new ClientConnection(cpId);
     client.setConnection(new Protocol(client, socket));
     socket.on('close', (code: number, reason: Buffer) => {
       const index = this.clients.indexOf(client);

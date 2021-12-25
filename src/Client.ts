@@ -15,14 +15,14 @@ export class Client extends EventEmitter {
     return this.cpId;
   }
 
-  callRequest(request: string, payload: any): Promise<any> {
+  protected callRequest(request: string, payload: any): Promise<any> {
     if (this.connection) {
       return this.connection.callRequest(request, payload);
     }
     throw new Error('Charging point not connected to central system');
   }
 
-  protected setConnection(connection: Protocol | null): void {
+  setConnection(connection: Protocol | null): void {
     this.connection = connection;
   }
 }

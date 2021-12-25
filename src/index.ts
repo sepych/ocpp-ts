@@ -1,5 +1,4 @@
 import { OcppError } from './OcppError';
-import { ChargingPointRequests, CentralSystemRequests } from './schemas';
 import { OcppServer } from './OcppServer';
 import * as OcppTypes from './types';
 import { OcppClient } from './OcppClient';
@@ -11,6 +10,4 @@ export {
   OcppClient,
   OcppError,
   OcppTypes,
-  ChargingPointRequests,
-  CentralSystemRequests,
 };

@@ -71,17 +71,19 @@ export class OcppServer extends EventEmitter {
       return;
     }
 
-    socket.on('error', (err) => {
-      console.info(err.message, socket.readyState);
-    });
-
     const client = new OcppClientConnection(cpId);
     client.setConnection(new Protocol(client, socket));
+
+    socket.on('error', (err) => {
+      console.info(err.message, socket.readyState);
+      client.emit('error', err);
+    });
+
     socket.on('close', (code: number, reason: Buffer) => {
       const index = this.clients.indexOf(client);
       this.clients.splice(index, 1);
       client.emit('close', code, reason);
-      this.emit('close', client, code, reason);
+      // this.emit('close', client, code, reason);
     });
     this.clients.push(client);
     this.emit('connection', client);

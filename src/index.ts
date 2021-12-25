@@ -1,14 +1,14 @@
 import { OcppError } from './OcppError';
 import { ChargingPointRequests, CentralSystemRequests } from './schemas';
-import { CentralSystem } from './CentralSystem';
+import { OcppServer } from './OcppServer';
 import * as OcppTypes from './types';
-import { ChargingPoint } from './ChargingPoint';
-import { ClientConnection } from './ClientConnection';
+import { OcppClient } from './OcppClient';
+import { OcppClientConnection } from './OcppClientConnection';
 
 export {
-  CentralSystem,
-  ClientConnection,
-  ChargingPoint,
+  OcppServer,
+  OcppClientConnection,
+  OcppClient,
   OcppError,
   OcppTypes,
   ChargingPointRequests,

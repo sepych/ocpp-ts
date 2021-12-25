@@ -1,4 +1,4 @@
-import { Client } from './Client';
+import { OcppClientImpl } from './OcppClientImpl';
 import {
   CancelReservationRequest,
   CancelReservationResponse,
@@ -40,7 +40,7 @@ import {
   UpdateFirmwareResponse,
 } from './types';
 
-export class ClientConnection extends Client {
+export class OcppClientConnection extends OcppClientImpl {
   callRequest(request: 'CancelReservation', payload: CancelReservationRequest): Promise<CancelReservationResponse>
   callRequest(request: 'ChangeAvailability', payload: ChangeAvailabilityRequest): Promise<ChangeAvailabilityResponse>
   callRequest(request: 'ChangeConfiguration', payload: ChangeConfigurationRequest): Promise<ChangeConfigurationResponse>

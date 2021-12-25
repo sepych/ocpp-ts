@@ -1,15 +1,16 @@
 import {
-  ChargingPoint, OcppError, OcppTypes,
+  OcppError, OcppTypes, OcppClient,
 } from '../src';
 
-const cp = new ChargingPoint('CP1111');
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+const cp = new OcppClient('CP1111');
 cp.on('error', (err: Error) => {
   console.log(err.message);
 });
 cp.on('close', () => {
   console.log('Connection closed');
 });
-
 cp.on('connect', async () => {
   const boot: OcppTypes.BootNotificationRequest = {
     chargePointVendor: 'eParking',
@@ -36,4 +37,5 @@ cp.on('connect', async () => {
     }
   }
 });
-cp.connect('ws://localhost:9220/webServices/ocpp/');
+
+cp.connect('wss://example.com:8081/webServices/ocpp/');

@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { OutgoingHttpHeaders } from 'http';
 import { Protocol } from './Protocol';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
-import { Client } from './Client';
+import { OcppClientImpl } from './OcppClientImpl';
 import {
   AuthorizeRequest,
   AuthorizeResponse,
@@ -25,7 +25,7 @@ import {
   StopTransactionRequest, StopTransactionResponse,
 } from './types';
 
-export class ChargingPoint extends Client {
+export class OcppClient extends OcppClientImpl {
   callRequest(request: 'Authorize', payload: AuthorizeRequest): Promise<AuthorizeResponse>
   callRequest(request: 'BootNotification', payload: BootNotificationRequest): Promise<BootNotificationResponse>
   callRequest(request: 'DataTransfer', payload: DataTransferRequest): Promise<DataTransferResponse>

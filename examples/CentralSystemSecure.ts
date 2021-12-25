@@ -1,11 +1,11 @@
 import { IncomingMessage } from 'http';
 import fs from 'fs';
 import {
-  CentralSystem, OcppTypes, ChargingPointRequests as events, ClientConnection,
+  OcppServer, OcppTypes, ChargingPointRequests as events, OcppClientConnection,
 } from '../src';
 
-const cs = new CentralSystem();
-cs.on('connection', (client: ClientConnection) => {
+const cs = new OcppServer();
+cs.on('connection', (client: OcppClientConnection) => {
   console.log(`Client ${client.getCpId()} connected`);
   client.on('close', (code: number, reason: Buffer) => {
     console.log(`Client ${client.getCpId()} closed connection`, code, reason.toString());

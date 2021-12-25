@@ -5,14 +5,14 @@ import { createServer as createHttpServer, IncomingMessage } from 'http';
 import stream from 'node:stream';
 import { SecureContextOptions } from 'tls';
 import { Protocol } from './Protocol';
-import { Client } from './Client';
+import { OcppClientImpl } from './OcppClientImpl';
 import { OCPP_PROTOCOL_1_6 } from './schemas';
-import { ClientConnection } from './ClientConnection';
+import { OcppClientConnection } from './OcppClientConnection';
 
-export class CentralSystem extends EventEmitter {
+export class OcppServer extends EventEmitter {
   server: WebSocket.Server | null = null;
 
-  clients: Array<Client> = [];
+  clients: Array<OcppClientImpl> = [];
 
   listen(port = 9220, options?: SecureContextOptions) {
     let server;
@@ -35,7 +35,7 @@ export class CentralSystem extends EventEmitter {
     wss.on('connection', (ws, req) => this.onNewConnection(ws, req));
 
     server.on('upgrade', (req: IncomingMessage, socket: stream.Duplex, head: Buffer) => {
-      const cpId = CentralSystem.getCpIdFromUrl(req.url);
+      const cpId = OcppServer.getCpIdFromUrl(req.url);
       if (!cpId) {
         socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
         socket.destroy();
@@ -61,7 +61,7 @@ export class CentralSystem extends EventEmitter {
   }
 
   onNewConnection(socket: WebSocket, req: IncomingMessage) {
-    const cpId = CentralSystem.getCpIdFromUrl(req.url);
+    const cpId = OcppServer.getCpIdFromUrl(req.url);
     if (!socket.protocol || !cpId) {
       // From Spec: If the Central System does not agree to using one of the subprotocols offered
       // by the client, it MUST complete the WebSocket handshake with a response without a
@@ -75,7 +75,7 @@ export class CentralSystem extends EventEmitter {
       console.info(err.message, socket.readyState);
     });
 
-    const client = new ClientConnection(cpId);
+    const client = new OcppClientConnection(cpId);
     client.setConnection(new Protocol(client, socket));
     socket.on('close', (code: number, reason: Buffer) => {
       const index = this.clients.indexOf(client);

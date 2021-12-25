@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { Protocol } from './Protocol';
 
-export class Client extends EventEmitter {
+export class OcppClientImpl extends EventEmitter {
   private connection: Protocol | null = null;
 
   private cpId: string;

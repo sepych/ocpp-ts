@@ -37,9 +37,12 @@ export class OcppError extends Error {
 
   details: any;
 
-  constructor(code: string, message?: string, details?: any) {
-    super(message);
+  info: string | undefined;
+
+  constructor(code: string, info?: string, details?: any | any[]) {
+    super(code);
     this.code = code;
+    this.info = info;
     this.details = details;
   }
 }

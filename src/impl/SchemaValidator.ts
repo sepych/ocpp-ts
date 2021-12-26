@@ -1,7 +1,9 @@
 import Ajv from 'ajv';
 import {
   ERROR_FORMATIONVIOLATION,
-  ERROR_PROPERTYCONSTRAINTVIOLATION, ERROR_PROTOCOLERROR, ERROR_TYPECONSTRAINTVIOLATION,
+  ERROR_PROPERTYCONSTRAINTVIOLATION,
+  ERROR_PROTOCOLERROR,
+  ERROR_TYPECONSTRAINTVIOLATION,
   OcppError,
 } from './OcppError';
 
@@ -13,7 +15,13 @@ export class SchemaValidator {
     delete this.schema.$schema;
   }
 
-  validate(payload: any) {
+  /**
+   * @throws {OcppError}
+   */
+  validate(payload: any): void {
+    if (!this.schema) {
+      throw new OcppError(ERROR_PROTOCOLERROR, 'Schema for request not found');
+    }
     const ajv = new Ajv();
     // delete schema.$schema;
     const validate = ajv.compile(this.schema);
@@ -27,7 +35,7 @@ export class SchemaValidator {
             + ' Action',
             error,
           );
-        } else if (['maxLength'].includes(error.keyword)) {
+        } else if (['maxLength', 'enum'].includes(error.keyword)) {
           throw new OcppError(
             ERROR_PROPERTYCONSTRAINTVIOLATION,
             'Payload is syntactically correct but at least one field contains an invalid value',
@@ -45,6 +53,12 @@ export class SchemaValidator {
             'Payload for Action is incomplete',
             error,
           );
+        } else {
+          throw new OcppError(
+            ERROR_FORMATIONVIOLATION,
+            'Payload for Action is syntactically incorrect or not conform the PDU structure for Action',
+            error,
+          );
         }
       });
       throw new OcppError(
@@ -52,6 +66,5 @@ export class SchemaValidator {
         'Payload for Action is syntactically incorrect or not conform the PDU structure for Action',
       );
     }
-    return true;
   }
 }

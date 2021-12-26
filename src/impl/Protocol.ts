@@ -1,14 +1,13 @@
 import WebSocket from 'ws';
-import Ajv from 'ajv';
 import { v4 as uuidv4 } from 'uuid';
 import EventEmitter from 'events';
 import schemas from './schemas';
 import {
-  ERROR_FORMATIONVIOLATION,
   ERROR_INTERNALERROR,
   ERROR_NOTIMPLEMENTED,
   OcppError,
 } from './OcppError';
+import { SchemaValidator } from './SchemaValidator';
 
 const CALL_MESSAGE = 2; // Client-to-Server
 const CALLRESULT_MESSAGE = 3; // Server-to-Client
@@ -119,50 +118,39 @@ export class Protocol {
   }
 
   private async onCall(messageId: string, request: string, payload: any) {
-    // @ts-ignore
-    const schema = schemas[request];
-    if (!schema) {
-      this.callError(messageId, new OcppError(ERROR_NOTIMPLEMENTED, `Action ${request} not found`));
-      return;
-    }
+    try {
+      // @ts-ignore
+      const schema = schemas[request];
 
-    // validating payload
-    const ajv = new Ajv();
-    delete schema.$schema;
-    const validate = ajv.compile(schema);
-    const valid = validate(payload);
-    if (!valid) {
-      // TODO add more accurate errors
-      this.callError(
-        messageId,
-        new OcppError(
-          ERROR_FORMATIONVIOLATION,
-          'Payload for Action is syntactically incorrect or not conform the PDU structure for Action',
-          validate.errors,
-        ),
-      );
-      return;
-    }
+      const validator = new SchemaValidator(schema);
+      validator.validate(payload);
+      const response = await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // timeout error
+          reject(new OcppError(ERROR_INTERNALERROR, 'No response from the handler'));
+        }, 10000);
 
-    const promise = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        // timeout error
-        reject(new OcppError(ERROR_INTERNALERROR, 'No response from the handler'));
-      }, 10000);
-
-      const hasListener = this.eventEmitter.emit(request, payload, (response: any) => {
-        resolve(response);
+        const hasListener = this.eventEmitter.emit(request, payload, (result: any) => {
+          resolve(result);
+        });
+        if (!hasListener) {
+          reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${request}" not set`));
+        }
       });
-      if (!hasListener) {
-        reject(new OcppError(ERROR_NOTIMPLEMENTED, `Listener for action "${request}" not set`));
-      }
-    });
-    promise.then((response) => {
       this.callResult(messageId, request, response);
-    })
-    .catch((err: OcppError) => {
-      this.callError(messageId, err);
-    });
+    } catch (e) {
+      if (e instanceof OcppError) {
+        this.callError(messageId, e);
+      } else {
+        this.callError(
+          messageId,
+          new OcppError(
+            ERROR_INTERNALERROR,
+            'An internal error occurred and the receiver was not able to process the requested Action',
+          ),
+        );
+      }
+    }
   }
 
   private callResult(messageId: string, action: string, responsePayload: any) {
